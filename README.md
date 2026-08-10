@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Library-System
 =======
 # React + TypeScript + Vite
