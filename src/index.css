@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", serif;
+  --font-sans: "IBM Plex Sans", sans-serif;
+
+  --color-moss-50: #F2F5EC;
+  --color-moss-100: #E1E9D3;
+  --color-moss-200: #C3D3A9;
+  --color-moss-500: #5A7A3C;
+  --color-moss-600: #4A6530;
+  --color-moss-700: #3B5126;
+  --color-moss-800: #2C3D1C;
+
+  --color-ivory-50: #FBF8F0;
+  --color-ivory-100: #F5EFDF;
+
+  --color-stamp-500: #B4463A;
+  --color-stamp-600: #9C3A2F;
+
+  --color-ink: #242019;
+}
