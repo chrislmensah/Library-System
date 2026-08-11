@@ -91,7 +91,7 @@ export function RegisterPage({ onSubmit }: RegisterPageProps) {
       <div className="rounded-lg border border-moss-100 bg-ivory-50 p-6 shadow-sm">
         <h1 className="font-display text-2xl text-ink">Register Account</h1>
         <p className="mt-2 font-sans text-sm text-ink/60">
-          Creating your account at <span className="font-semibold text-moss-700">Librarika</span> is
+          Creating your account at <span className="font-semibold text-moss-700">Sankofa Library</span> is
           completely free. You can join as many libraries as you want using one single account.
         </p>
 
@@ -161,7 +161,7 @@ export function RegisterPage({ onSubmit }: RegisterPageProps) {
 
       <aside className="pt-2">
         <h2 className="font-display text-2xl text-ink">
-          Why <span className="text-moss-700">Librarika</span>?
+          Why <span className="text-moss-700">Sankofa Library</span>?
         </h2>
         <ul className="mt-4 flex flex-col gap-2.5">
           {WHY_LIBRARIKA.map((item) => (

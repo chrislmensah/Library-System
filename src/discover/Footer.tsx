@@ -8,8 +8,8 @@ interface FooterProps {
 export function Footer({
   poweredByName = "Raynux.com",
   poweredByHref = "https://raynux.com",
-  siteName = "Librarika.com",
-  siteHref = "https://librarika.com",
+  siteName = "Sankofa Library",
+  siteHref = "https://sankofalibrary.com",
 }: FooterProps) {
   const year = new Date().getFullYear();
 
