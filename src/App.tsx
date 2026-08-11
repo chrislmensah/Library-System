@@ -10,11 +10,12 @@ import { AdminLayout } from "./admin/AdminLayout";
 import { AdminDashboardPage } from "./admin/AdminDashboardPage";
 import { CatalogsPage } from "./admin/CatalogsPage";
 import { CirculationsPage } from "./admin/CirculationsPage";
+import { ReportsPage } from "./reports/ReportsPage";
 import type { CatalogBook } from "./admin/catalogTypes";
 import type { CirculationRecord } from "./admin/circulationTypes";
 import type { Book } from "./discover/types";
 
-// Placeholder for admin sections not built yet (Procurements, Reports, etc.)
+// Placeholder for admin sections not built yet (Procurements, Manage, etc.)
 // so sidebar links don't feel broken while those pages are in progress.
 function ComingSoonPage({ title }: { title: string }) {
   return (
@@ -175,7 +176,10 @@ function AppRoutes() {
           }
         />
         <Route path="procurements" element={<ComingSoonPage title="Procurements" />} />
-        <Route path="reports" element={<ComingSoonPage title="Reports" />} />
+        <Route
+          path="reports"
+          element={<ReportsPage books={mockCatalogBooks} circulations={mockCirculations} />}
+        />
         <Route path="others" element={<ComingSoonPage title="Others" />} />
         <Route path="manage" element={<ComingSoonPage title="Manage" />} />
         <Route path="docs" element={<ComingSoonPage title="Documentation" />} />
