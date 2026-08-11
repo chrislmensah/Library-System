@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Menu, X, User, ChevronDown, LayoutDashboard, Compass, LogOut } from "lucide-react";
+import { Menu, X, User, ChevronDown, LayoutDashboard, Compass, LogOut, Plus } from "lucide-react";
 
 interface NavLinkItem {
   label: string;
@@ -52,12 +52,20 @@ export function Nav({ isLoggedIn, brandName = "Sankofa Library", onLogOut }: Nav
           {isLoggedIn ? (
             <AccountMenu onLogOut={onLogOut} />
           ) : (
+            <> 
             <Link
+            to = "/create-library"
+            className="font-sans text-sm text-ivory-100/80 hover:text-ivory-50"
+            >
+                Create Library
+                </Link>
+                <Link
               to="/register"
               className="rounded-full bg-ivory-50 px-4 py-1.5 font-sans text-sm font-medium text-moss-800 shadow-sm transition hover:bg-ivory-100"
             >
               Sign Up
             </Link>
+            </>
           )}
         </div>
 
@@ -152,6 +160,7 @@ function AccountMenu({ onLogOut }: { onLogOut?: () => void }) {
         >
           <MenuLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setOpen(false)} />
           <MenuLink to="/account" icon={Compass} label="My Account" onClick={() => setOpen(false)} />
+          <MenuLink to="/create-library" icon={Plus} label="Create Library" onClick={() => setOpen(false)} />       
           <button
             role="menuitem"
             onClick={() => {

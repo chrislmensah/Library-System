@@ -6,14 +6,21 @@ import { DatabaseAZPage } from "./discover/DatabaseAZPage";
 import { RegisterPage } from "./discover/RegisterPage";
 import { AccountPage, type BorrowedBook } from "./discover/AccountPage";
 import { AskLibrarianPage } from "./discover/AskLibrarianPage";
+import { FaqPage } from "./FAQ/FaqPage";
 import { AdminLayout } from "./admin/AdminLayout";
 import { AdminDashboardPage } from "./admin/AdminDashboardPage";
 import { CatalogsPage } from "./admin/CatalogsPage";
 import { CirculationsPage } from "./admin/CirculationsPage";
 import { ReportsPage } from "./reports/ReportsPage";
+import { ManagePage } from "./admin/manage/ManagePage";
+import { ProcurementsPage } from "./procurements/ProcurementsPage";
 import type { CatalogBook } from "./admin/catalogTypes";
 import type { CirculationRecord } from "./admin/circulationTypes";
+import type { StaffMember, LibraryMember } from "./admin/manage/manageTypes";
+import type { ProcurementOrder } from "./procurements/procurementTypes";
 import type { Book } from "./discover/types";
+import { CreateLibraryPage } from "./library/CreateLibraryPage";
+import { RequireLibrary } from "./library/RequireLibrary";
 
 // Placeholder for admin sections not built yet (Procurements, Manage, etc.)
 // so sidebar links don't feel broken while those pages are in progress.
@@ -94,6 +101,59 @@ const mockCirculations: CirculationRecord[] = [
   },
 ];
 
+// TODO: replace with real tRPC query once wired up
+const mockStaff: StaffMember[] = [
+  {
+    id: "s1",
+    name: "Christopher",
+    email: "christopher@example.com",
+    role: "owner",
+    joinedAt: "2026-02-01T00:00:00Z",
+  },
+  {
+    id: "s2",
+    name: "Adjoa Owusu",
+    email: "adjoa@example.com",
+    role: "librarian",
+    joinedAt: "2026-03-15T00:00:00Z",
+  },
+];
+
+// TODO: replace with real tRPC query once wired up
+const mockMembers: LibraryMember[] = [
+  { id: "m1", name: "Ama Boateng", email: "ama@example.com", status: "active", memberSince: "2026-05-01T00:00:00Z" },
+  { id: "m2", name: "Kwame Mensah", email: "kwame@example.com", status: "active", memberSince: "2026-06-12T00:00:00Z" },
+];
+
+// TODO: replace with real tRPC query once wired up
+const mockProcurements: ProcurementOrder[] = [
+  {
+    id: "p1",
+    title: "The Fifth Season",
+    author: "N.K. Jemisin",
+    isbn: "9780316229296",
+    quantity: 3,
+    vendor: "Ingram",
+    costPerCopy: 14.99,
+    status: "ordered",
+    requestedBy: "Christopher",
+    requestedAt: "2026-07-20T00:00:00Z",
+    expectedDate: "2026-08-25",
+  },
+  {
+    id: "p2",
+    title: "To Kill a Mockingbird",
+    author: "Harper Lee",
+    isbn: "9780061120084",
+    quantity: 2,
+    vendor: "Local distributor",
+    costPerCopy: 9.5,
+    status: "requested",
+    requestedBy: "Adjoa Owusu",
+    requestedAt: "2026-08-05T00:00:00Z",
+  },
+];
+
 function AppRoutes() {
   // TODO: replace with real session state (context, or your auth lib's hook) once wired up
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -157,34 +217,44 @@ function AppRoutes() {
             />
           }
         />
+        <Route path="/faqs" element={<FaqPage />} />
+        <Route path="/create-library" element={<CreateLibraryPage />} />
       </Route>
 
-      <Route path="/dashboard" element={<AdminLayout libraryName="Sankofa Library" onLogOut={handleLogOut} />}>
-        <Route
-          index
-          element={
-            <AdminDashboardPage
-              stats={{ totalBooks: 1842, totalMembers: 356, activeLoans: 47, overdueLoans: 5 }}
-            />
-          }
-        />
-        <Route path="catalogs" element={<CatalogsPage initialBooks={mockCatalogBooks} />} />
-        <Route
-          path="circulations"
-          element={
-            <CirculationsPage initialRecords={mockCirculations} catalogBooks={mockCatalogBooks} />
-          }
-        />
-        <Route path="procurements" element={<ComingSoonPage title="Procurements" />} />
-        <Route
-          path="reports"
-          element={<ReportsPage books={mockCatalogBooks} circulations={mockCirculations} />}
-        />
-        <Route path="others" element={<ComingSoonPage title="Others" />} />
-        <Route path="manage" element={<ComingSoonPage title="Manage" />} />
-        <Route path="docs" element={<ComingSoonPage title="Documentation" />} />
-        <Route path="support" element={<ComingSoonPage title="Need support" />} />
-        <Route path="settings" element={<ComingSoonPage title="Settings" />} />
+      <Route element={<RequireLibrary />}>
+        <Route path="/dashboard" element={<AdminLayout libraryName="Sankofa Library" onLogOut={handleLogOut} />}>
+          <Route
+            index
+            element={
+              <AdminDashboardPage
+                stats={{ totalBooks: 1842, totalMembers: 356, activeLoans: 47, overdueLoans: 5 }}
+              />
+            }
+          />
+          <Route path="catalogs" element={<CatalogsPage initialBooks={mockCatalogBooks} />} />
+          <Route
+            path="circulations"
+            element={
+              <CirculationsPage initialRecords={mockCirculations} catalogBooks={mockCatalogBooks} />
+            }
+          />
+          <Route
+            path="procurements"
+            element={<ProcurementsPage initialOrders={mockProcurements} requestedBy="Christopher" />}
+          />
+          <Route
+            path="reports"
+            element={<ReportsPage books={mockCatalogBooks} circulations={mockCirculations} />}
+          />
+          <Route path="others" element={<ComingSoonPage title="Others" />} />
+          <Route
+            path="manage"
+            element={<ManagePage initialStaff={mockStaff} initialMembers={mockMembers} />}
+          />
+          <Route path="docs" element={<ComingSoonPage title="Documentation" />} />
+          <Route path="support" element={<ComingSoonPage title="Need support" />} />
+          <Route path="settings" element={<ComingSoonPage title="Settings" />} />
+        </Route>
       </Route>
     </Routes>
   );
