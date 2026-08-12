@@ -1,7 +1,11 @@
-import { type CirculationRecord, getLoanStatus } from "../admin/circulationTypes";
+import { getLoanStatusDerived, type Loan } from "../loan/loanTypes";
+import type { CatalogBook } from "../admin/catalogTypes";
+import type { LibraryMember } from "../admin/manage/manageTypes";
 
 interface OverdueLoansTableProps {
-  records: CirculationRecord[];
+  loans: Loan[];
+  books: CatalogBook[];
+  members: LibraryMember[];
 }
 
 function daysOverdue(dueDate: string) {
@@ -9,9 +13,9 @@ function daysOverdue(dueDate: string) {
   return Math.max(1, Math.ceil(ms / (1000 * 60 * 60 * 24)));
 }
 
-export function OverdueLoansTable({ records }: OverdueLoansTableProps) {
-  const overdue = records
-    .filter((r) => getLoanStatus(r) === "overdue")
+export function OverdueLoansTable({ loans, books, members }: OverdueLoansTableProps) {
+  const overdue = loans
+    .filter((l) => getLoanStatusDerived(l) === "overdue")
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
   if (overdue.length === 0) {
@@ -34,15 +38,19 @@ export function OverdueLoansTable({ records }: OverdueLoansTableProps) {
         </tr>
       </thead>
       <tbody className="divide-y divide-moss-50">
-        {overdue.map((r) => (
-          <tr key={r.id}>
-            <td className="py-2 font-sans text-sm text-ink">{r.bookTitle}</td>
-            <td className="py-2 font-sans text-sm text-ink/60">{r.memberName}</td>
-            <td className="py-2 text-right font-sans text-sm font-medium text-red-600">
-              {daysOverdue(r.dueDate)}d
-            </td>
-          </tr>
-        ))}
+        {overdue.map((loan) => {
+          const book = books.find((b) => b.id === loan.bookId);
+          const member = members.find((m) => m.id === loan.memberId);
+          return (
+            <tr key={loan.id}>
+              <td className="py-2 font-sans text-sm text-ink">{book?.title ?? "Unknown book"}</td>
+              <td className="py-2 font-sans text-sm text-ink/60">{member?.name ?? "Unknown member"}</td>
+              <td className="py-2 text-right font-sans text-sm font-medium text-red-600">
+                {daysOverdue(loan.dueDate)}d
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

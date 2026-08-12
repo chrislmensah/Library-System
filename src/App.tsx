@@ -6,7 +6,6 @@ import { DatabaseAZPage } from "./discover/DatabaseAZPage";
 import { RegisterPage } from "./discover/RegisterPage";
 import { AccountPage, type BorrowedBook } from "./discover/AccountPage";
 import { AskLibrarianPage } from "./discover/AskLibrarianPage";
-import { FaqPage } from "./FAQ/FaqPage";
 import { AdminLayout } from "./admin/AdminLayout";
 import { AdminDashboardPage } from "./admin/AdminDashboardPage";
 import { CatalogsPage } from "./admin/CatalogsPage";
@@ -15,14 +14,15 @@ import { ReportsPage } from "./reports/ReportsPage";
 import { ManagePage } from "./admin/manage/ManagePage";
 import { ProcurementsPage } from "./procurements/ProcurementsPage";
 import type { CatalogBook } from "./admin/catalogTypes";
-import type { CirculationRecord } from "./admin/circulationTypes";
 import type { StaffMember, LibraryMember } from "./admin/manage/manageTypes";
 import type { ProcurementOrder } from "./procurements/procurementTypes";
+import type { LoanRequest, Loan, Fine, LibrarySettings } from "./loan/loanTypes";
 import type { Book } from "./discover/types";
-import { CreateLibraryPage } from "./library/CreateLibraryPage";
-import { RequireLibrary } from "./library/RequireLibrary";
 
-// Placeholder for admin sections not built yet (Procurements, Manage, etc.)
+const LIBRARY_ID = "lib_sankofa";
+const CURRENT_STAFF_ID = "s1"; // matches mockStaff[0] ("Christopher") — swap for real session once auth is wired up
+
+// Placeholder for admin sections not built yet (Others, Docs, Support, Settings)
 // so sidebar links don't feel broken while those pages are in progress.
 function ComingSoonPage({ title }: { title: string }) {
   return (
@@ -80,28 +80,6 @@ const mockCatalogBooks: CatalogBook[] = mockBooks.map((b, i) => ({
 }));
 
 // TODO: replace with real tRPC query once wired up
-const mockCirculations: CirculationRecord[] = [
-  {
-    id: "c1",
-    bookId: mockCatalogBooks[0].id,
-    bookTitle: mockCatalogBooks[0].title,
-    memberName: "Ama Boateng",
-    memberEmail: "ama@example.com",
-    checkedOutAt: "2026-07-28T00:00:00Z",
-    dueDate: "2026-08-20T00:00:00Z",
-  },
-  {
-    id: "c2",
-    bookId: mockCatalogBooks[2].id,
-    bookTitle: mockCatalogBooks[2].title,
-    memberName: "Kwame Mensah",
-    memberEmail: "kwame@example.com",
-    checkedOutAt: "2026-07-10T00:00:00Z",
-    dueDate: "2026-08-02T00:00:00Z", // in the past on purpose, to preview the "Overdue" state
-  },
-];
-
-// TODO: replace with real tRPC query once wired up
 const mockStaff: StaffMember[] = [
   {
     id: "s1",
@@ -153,6 +131,64 @@ const mockProcurements: ProcurementOrder[] = [
     requestedAt: "2026-08-05T00:00:00Z",
   },
 ];
+
+// TODO: replace with real tRPC query once wired up
+const mockLibrarySettings: LibrarySettings = {
+  libraryId: LIBRARY_ID,
+  finePerDay: 0.5,
+  finePerDayCurrency: "GHS",
+  gracePeriodDays: 1,
+  maxFineAmount: 10,
+  lostBookFineMode: "flat",
+  lostBookFlatFee: 15,
+};
+
+// TODO: replace with real tRPC query once wired up
+const mockLoanRequests: LoanRequest[] = [
+  {
+    id: "lr1",
+    libraryId: LIBRARY_ID,
+    bookId: mockCatalogBooks[1].id, // To Kill a Mockingbird
+    memberId: "m1",
+    requestedAt: "2026-08-09T00:00:00Z",
+    status: "pending",
+    decidedBy: null,
+    decidedAt: null,
+  },
+];
+
+// TODO: replace with real tRPC query once wired up
+const mockLoans: Loan[] = [
+  {
+    id: "l1",
+    libraryId: LIBRARY_ID,
+    bookId: mockCatalogBooks[0].id, // Harry Potter
+    memberId: "m1",
+    loanRequestId: null,
+    checkedOutAt: "2026-07-28T00:00:00Z",
+    checkedOutBy: CURRENT_STAFF_ID,
+    dueDate: "2026-08-20T00:00:00Z",
+    returnedAt: null,
+    returnedTo: null,
+    status: "active",
+  },
+  {
+    id: "l2",
+    libraryId: LIBRARY_ID,
+    bookId: mockCatalogBooks[2].id, // 20,000 Leagues
+    memberId: "m2",
+    loanRequestId: null,
+    checkedOutAt: "2026-07-10T00:00:00Z",
+    checkedOutBy: CURRENT_STAFF_ID,
+    dueDate: "2026-08-02T00:00:00Z", // in the past on purpose, to preview the "Overdue" state
+    returnedAt: null,
+    returnedTo: null,
+    status: "active",
+  },
+];
+
+// TODO: replace with real tRPC query once wired up
+const mockFines: Fine[] = [];
 
 function AppRoutes() {
   // TODO: replace with real session state (context, or your auth lib's hook) once wired up
@@ -217,44 +253,55 @@ function AppRoutes() {
             />
           }
         />
-        <Route path="/faqs" element={<FaqPage />} />
-        <Route path="/create-library" element={<CreateLibraryPage />} />
       </Route>
 
-      <Route element={<RequireLibrary />}>
-        <Route path="/dashboard" element={<AdminLayout libraryName="Sankofa Library" onLogOut={handleLogOut} />}>
-          <Route
-            index
-            element={
-              <AdminDashboardPage
-                stats={{ totalBooks: 1842, totalMembers: 356, activeLoans: 47, overdueLoans: 5 }}
-              />
-            }
-          />
-          <Route path="catalogs" element={<CatalogsPage initialBooks={mockCatalogBooks} />} />
-          <Route
-            path="circulations"
-            element={
-              <CirculationsPage initialRecords={mockCirculations} catalogBooks={mockCatalogBooks} />
-            }
-          />
-          <Route
-            path="procurements"
-            element={<ProcurementsPage initialOrders={mockProcurements} requestedBy="Christopher" />}
-          />
-          <Route
-            path="reports"
-            element={<ReportsPage books={mockCatalogBooks} circulations={mockCirculations} />}
-          />
-          <Route path="others" element={<ComingSoonPage title="Others" />} />
-          <Route
-            path="manage"
-            element={<ManagePage initialStaff={mockStaff} initialMembers={mockMembers} />}
-          />
-          <Route path="docs" element={<ComingSoonPage title="Documentation" />} />
-          <Route path="support" element={<ComingSoonPage title="Need support" />} />
-          <Route path="settings" element={<ComingSoonPage title="Settings" />} />
-        </Route>
+      <Route path="/dashboard" element={<AdminLayout libraryName="Sankofa Library" onLogOut={handleLogOut} />}>
+        <Route
+          index
+          element={
+            <AdminDashboardPage
+              stats={{ totalBooks: 1842, totalMembers: 356, activeLoans: 47, overdueLoans: 5 }}
+            />
+          }
+        />
+        <Route path="catalogs" element={<CatalogsPage initialBooks={mockCatalogBooks} />} />
+        <Route
+          path="circulations"
+          element={
+            <CirculationsPage
+              initialRequests={mockLoanRequests}
+              initialLoans={mockLoans}
+              initialFines={mockFines}
+              books={mockCatalogBooks}
+              members={mockMembers}
+              librarySettings={mockLibrarySettings}
+              currentStaffId={CURRENT_STAFF_ID}
+            />
+          }
+        />
+        <Route
+          path="procurements"
+          element={<ProcurementsPage initialOrders={mockProcurements} requestedBy="Christopher" />}
+        />
+        <Route
+          path="reports"
+          element={
+            <ReportsPage
+              books={mockCatalogBooks}
+              loans={mockLoans}
+              fines={mockFines}
+              members={mockMembers}
+            />
+          }
+        />
+        <Route path="others" element={<ComingSoonPage title="Others" />} />
+        <Route
+          path="manage"
+          element={<ManagePage initialStaff={mockStaff} initialMembers={mockMembers} />}
+        />
+        <Route path="docs" element={<ComingSoonPage title="Documentation" />} />
+        <Route path="support" element={<ComingSoonPage title="Need support" />} />
+        <Route path="settings" element={<ComingSoonPage title="Settings" />} />
       </Route>
     </Routes>
   );

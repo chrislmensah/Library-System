@@ -1,41 +1,46 @@
 import { useMemo } from "react";
-import { BookMarked, Clock, AlertTriangle, TimerReset } from "lucide-react";
+import { BookMarked, Clock, AlertTriangle, TimerReset, CircleDollarSign } from "lucide-react";
 import { ReportStatCard } from "./ReportStatCard";
 import { TopBooksChart } from "./TopBooksChart";
 import { OverdueLoansTable } from "./OverdueLoansTable";
-import { getLoanStatus, type CirculationRecord } from "../admin/circulationTypes";
+import { getLoanStatusDerived, type Loan, type Fine } from "../loan/loanTypes";
 import type { CatalogBook } from "../admin/catalogTypes";
+import type { LibraryMember } from "../admin/manage/manageTypes";
 
 interface ReportsPageProps {
   books: CatalogBook[];
-  circulations: CirculationRecord[];
+  loans: Loan[];
+  fines: Fine[];
+  members: LibraryMember[];
 }
 
-export function ReportsPage({ books, circulations }: ReportsPageProps) {
+export function ReportsPage({ books, loans, fines, members }: ReportsPageProps) {
   const stats = useMemo(() => {
-    const active = circulations.filter((r) => getLoanStatus(r) === "active").length;
-    const overdue = circulations.filter((r) => getLoanStatus(r) === "overdue").length;
-    const returned = circulations.filter((r) => getLoanStatus(r) === "returned");
+    const active = loans.filter((l) => getLoanStatusDerived(l) === "active").length;
+    const overdue = loans.filter((l) => getLoanStatusDerived(l) === "overdue").length;
+    const returned = loans.filter((l) => l.status === "returned");
+    const unpaidFines = fines.filter((f) => f.status === "unpaid");
 
     const avgLoanDays =
       returned.length === 0
         ? 0
         : Math.round(
-            returned.reduce((sum, r) => {
+            returned.reduce((sum, l) => {
               const days =
-                (new Date(r.returnedAt!).getTime() - new Date(r.checkedOutAt).getTime()) /
+                (new Date(l.returnedAt!).getTime() - new Date(l.checkedOutAt).getTime()) /
                 (1000 * 60 * 60 * 24);
               return sum + days;
             }, 0) / returned.length
           );
 
     return {
-      totalLoans: circulations.length,
+      totalLoans: loans.length,
       active,
       overdue,
       avgLoanDays,
+      unpaidFinesTotal: unpaidFines.reduce((sum, f) => sum + f.amount, 0),
     };
-  }, [circulations]);
+  }, [loans, fines]);
 
   return (
     <div>
@@ -46,7 +51,7 @@ export function ReportsPage({ books, circulations }: ReportsPageProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <ReportStatCard label="Total loans" value={stats.totalLoans} icon={BookMarked} />
         <ReportStatCard label="Active loans" value={stats.active} icon={Clock} />
         <ReportStatCard
@@ -60,6 +65,12 @@ export function ReportsPage({ books, circulations }: ReportsPageProps) {
           value={stats.avgLoanDays > 0 ? `${stats.avgLoanDays}d` : "—"}
           icon={TimerReset}
         />
+        <ReportStatCard
+          label="Unpaid fines"
+          value={`$${stats.unpaidFinesTotal.toFixed(2)}`}
+          icon={CircleDollarSign}
+          tone={stats.unpaidFinesTotal > 0 ? "warning" : "default"}
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -70,7 +81,7 @@ export function ReportsPage({ books, circulations }: ReportsPageProps) {
 
         <div className="rounded-lg border border-moss-200 bg-white p-4 shadow-sm">
           <h2 className="mb-3 font-display text-base text-ink">Overdue loans</h2>
-          <OverdueLoansTable records={circulations} />
+          <OverdueLoansTable loans={loans} books={books} members={members} />
         </div>
       </div>
     </div>
